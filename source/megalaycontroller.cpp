@@ -1,37 +1,3 @@
-//------------------------------------------------------------------------
-// Project     : VST SDK
-// Version     : 3.1.0
-//
-// Category    : Examples
-// Filename    : public.sdk/samples/vst/again/source/againcontroller.cpp
-// Created by  : Steinberg, 04/2005
-// Description : AGain Controller Example for VST 3.0
-//
-//-----------------------------------------------------------------------------
-// LICENSE
-// (c) 2010, Steinberg Media Technologies GmbH, All Rights Reserved
-//-----------------------------------------------------------------------------
-// This Software Development Kit may not be distributed in parts or its entirety  
-// without prior written agreement by Steinberg Media Technologies GmbH. 
-// This SDK must not be used to re-engineer or manipulate any technology used  
-// in any Steinberg or Third-party application or software module, 
-// unless permitted by law.
-// Neither the name of the Steinberg Media Technologies nor the names of its
-// contributors may be used to endorse or promote products derived from this 
-// software without specific prior written permission.
-// 
-// THIS SDK IS PROVIDED BY STEINBERG MEDIA TECHNOLOGIES GMBH "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-// IN NO EVENT SHALL STEINBERG MEDIA TECHNOLOGIES GMBH BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
-
 #include "megalaycontroller.h"
 #include "megalayparamids.h"
 
@@ -43,6 +9,13 @@
 
 #include <stdio.h>
 #include <math.h>
+
+#define READ_PARAMETER(SavedParameter) \
+int32 SavedParameter = 0.f;\
+    if (state->read (&SavedParameter, sizeof (int32)) != kResultOk)\
+{\
+        return kResultFalse;\
+}
 
 namespace Steinberg {
 namespace Vst {
@@ -57,8 +30,8 @@ public:
 	MegalayParameter (int32 flags, int32 id);
 	MegalayParameter (const TChar* title, const TChar* units, int32 flags, int32 id);
 
-	virtual void toString (ParamValue normValue, String128 string) const;
-	virtual bool fromString (const TChar* string, ParamValue& normValue) const;
+    void toString (ParamValue normValue, String128 string) const override;
+    bool fromString (const TChar* string, ParamValue& normValue) const override;
 };
 
 //------------------------------------------------------------------------
@@ -170,19 +143,7 @@ tresult PLUGIN_API AMegalayController::initialize (FUnknown* context)
 	unit = new Unit (unitInfo);
 	addUnit (unit);
 
-	// create a unit1 for the gain
-	/*unitInfo.id = 1;
-	unitInfo.parentUnitId = kRootUnitId;	// attached to the root unit
-
-	Steinberg::UString (unitInfo.name, USTRINGSIZE (unitInfo.name)).assign (USTRING ("Unit1"));
-	
-	unitInfo.programListId = kNoProgramListId;
-
-	unit = new Unit (unitInfo);
-	addUnit (unit); */
-
 	//---Create Parameters------------
-	
 
 	//---VuMeter parameter---
 	int32 stepCount = 0;
@@ -190,13 +151,6 @@ tresult PLUGIN_API AMegalayController::initialize (FUnknown* context)
 	int32 flags = ParameterInfo::kIsReadOnly;
 	int32 tag = kVuPPMId;
 	parameters.addParameter (STR16 ("VuPPM"), 0, stepCount, defaultVal, flags, tag);
-
-	//---VuMeter parameter---
-	//stepCount = 3;
-	//defaultVal = 0;
-	//flags = ParameterInfo::kIsProgramChange;
-	//tag = 100;
-	//parameters.addParameter (STR16 ("ProgramChange"), 0, stepCount, defaultVal, flags, tag);
 
 	//---Bypass parameter---
 	stepCount = 1;
@@ -253,8 +207,6 @@ tresult PLUGIN_API AMegalayController::initialize (FUnknown* context)
 	flags = ParameterInfo::kCanAutomate;
 	tag = kVFreqId;
 	parameters.addParameter (STR16 ("VibroFreq"), STR16 ("Beats"), stepCount, defaultVal, flags, tag);
-	//MegalayParameter* VFreqParam = new MegalayParameter (STR16 ("VibroFreq"), STR16 ("Beats"),ParameterInfo::kCanAutomate, kVFreqId);
-	//parameters.addParameter (VFreqParam);
 
 	//---Vibro Densety parameter---
 	stepCount = 0;
@@ -281,19 +233,12 @@ tresult PLUGIN_API AMegalayController::initialize (FUnknown* context)
 	parameters.addParameter (MegalayParam);
 
 	MegalayParam->setUnitID (kRootUnitId);
-	//---Custom state init------------
-
-	//String str ("Hello World!");
-	//str.copyTo (defaultMessageText, 0, 127);
-	
 	return result;
 }
 
 //------------------------------------------------------------------------
 tresult PLUGIN_API AMegalayController::terminate  ()
 {
-	//viewsArray.removeAll ();
-	
 	return EditControllerEx1::terminate ();
 }
 
@@ -443,20 +388,6 @@ tresult PLUGIN_API AMegalayController::setComponentState (IBStream* state)
 }
 
 //------------------------------------------------------------------------
-//IPlugView* PLUGIN_API AMegalayController::createView (const char* name)
-//{
-//	// someone wants my editor
-//	if (name && strcmp (name, "editor") == 0)
-//	{
-//		AMegalayEditorView* view = new AMegalayEditorView (this);
-//		return view;
-//		//return 0;
-//
-//	}
-//	return 0;
-//}
-
-//------------------------------------------------------------------------
 tresult PLUGIN_API AMegalayController::setState (IBStream* state)
 {
 	int8 byteOrder;
@@ -570,114 +501,20 @@ tresult PLUGIN_API AMegalayController::setParamNormalized (ParamID tag, ParamVal
 {
 	// called from host to update our parameters state
 	tresult result = EditControllerEx1::setParamNormalized (tag, value);
-	
-	//for (int32 i = 0; i < viewsArray.total (); i++)
-	//{
-	//	if (viewsArray.at (i))
-	//	{
-	//		viewsArray.at (i)->update (tag, value);
-	//	}
-	//}
-
 	return result;
 }
 
 //------------------------------------------------------------------------
 tresult PLUGIN_API AMegalayController::getParamStringByValue (ParamID tag, ParamValue valueNormalized, String128 string)
 {
-	/* example, but better to use a custom Parameter as seen in GainParameter
-	switch (tag)
-	{
-		case kGainId:
-		{
-			char text[32];
-			if (valueNormalized > 0.0001)
-			{
-				sprintf (text, "%.2f", 20 * log10f ((float)valueNormalized));
-			}
-			else
-				strcpy (text, "-oo");
-
-			Steinberg::UString (string, 128).fromAscii (text);
-
-			return kResultTrue;
-		}
-	}*/
 	return EditControllerEx1::getParamStringByValue (tag, valueNormalized, string);
 }
 
 //------------------------------------------------------------------------
 tresult PLUGIN_API AMegalayController::getParamValueByString (ParamID tag, TChar* string, ParamValue& valueNormalized)
 {
-	/* example, but better to use a custom Parameter as seen in GainParameter
-	switch (tag)
-	{
-		case kGainId:
-		{
-			Steinberg::UString wrapper ((TChar*)string, -1); // don't know buffer size here!
-			double tmp = 0.0;
-			if (wrapper.scanFloat (tmp))
-			{
-				valueNormalized = expf (logf (10.f) * (float)tmp / 20.f);
-				return kResultTrue;
-			}
-			return kResultFalse;
-		}
-	}*/
 	return EditControllerEx1::getParamValueByString (tag, string, valueNormalized);
 }
-
-//------------------------------------------------------------------------
-//void AMegalayController::addDependentView (AMegalayEditorView* view)
-//{
-//	viewsArray.add (view);
-//}
-
-//------------------------------------------------------------------------
-//void AMegalayController::removeDependentView (AMegalayEditorView* view)
-//{
-//	for (int32 i = 0; i < viewsArray.total (); i++)
-//	{
-//		if (viewsArray.at (i) == view)
-//		{
-//			viewsArray.removeAt (i);
-//			break;
-//		}
-//	}
-//}
-
-//------------------------------------------------------------------------
-//void AMegalayController::editorAttached (AMegalayEditorView* editor)
-//{
-//	AMegalayEditorView* view = dynamic_cast<AMegalayEditorView*> (editor);
-//	if (view)
-//	{
-//		addDependentView (view);
-//	}
-//}
-
-//------------------------------------------------------------------------
-//void AMegalayController::editorRemoved (AMegalayEditorView* editor)
-//{
-//	AMegalayEditorView* view = dynamic_cast<AMegalayEditorView*> (editor);
-//	if (view)
-//	{
-//		removeDependentView (view);
-//	}
-//}
-
-//------------------------------------------------------------------------
-/*void AMegalayController::setDefaultMessageText (String128 text)
-{
-	String tmp (text);
-	tmp.copyTo (defaultMessageText, 0, 127);
-}
-
-//------------------------------------------------------------------------
-TChar* AMegalayController::getDefaultMessageText ()
-{
-	return defaultMessageText;
-} */
 
 //------------------------------------------------------------------------
 tresult PLUGIN_API AMegalayController::queryInterface (const char* iid, void** obj)
@@ -708,61 +545,5 @@ tresult PLUGIN_API AMegalayController::getMidiControllerAssignment (int32 busInd
 
 	return kResultFalse;
 }
-
-//-----------------------------------------------------------------------------
-/*int32 PLUGIN_API AMegalayController::getProgramListCount ()
-{
-	if (parameters.getParameter (0))
-		return 1;
-	return 0;
-}
-
-//-----------------------------------------------------------------------------
-tresult PLUGIN_API AMegalayController::getProgramListInfo (int32 listIndex, ProgramListInfo& info)
-{
-	Parameter* param = parameters.getParameter (0);
-	if (param && listIndex == 0)
-	{
-		info.id = 0;
-		info.programCount = 2;
-		UString name (info.name, 128);
-		name.fromAscii("Presets");
-		return kResultTrue;
-	}
-	return kResultFalse;
-}
-
-//-----------------------------------------------------------------------------
-tresult PLUGIN_API AMegalayController::getProgramName (ProgramListID listId, int32 programIndex, String128 name)
-{
-	if (listId == 0)
-	{
-		Parameter* param = parameters.getParameter (0);
-		if (param)
-		{
-			ParamValue normalized = param->toNormalized (programIndex);
-			param->toString (normalized, name);
-			return kResultTrue;
-		}
-	}
-	return kResultFalse;
-}
-
-//-----------------------------------------------------------------------------
-tresult PLUGIN_API AMegalayController::getProgramInfo (ProgramListID listId, int32 programIndex, CString attributeId, String128 attributeValue)
-{
-	if (listId == 0)
-	{
-		Parameter* param = parameters.getParameter (0);
-		if (param)
-		{
-			ParamValue normalized = param->toNormalized (programIndex);
-			param->toString (normalized, attributeValue);
-			return kResultTrue;
-		}
-	}
-	return kResultFalse;
-}*/
-
 
 }} // namespaces
