@@ -3,8 +3,13 @@
 namespace Steinberg {
 namespace Vst {
 
-static DECLARE_UID (AMegalayProcessorUID, 0x36ec68fe, 0x9acf41e7, 0x851715fb, 0x2d552e37);
-static DECLARE_UID (AMegalayControllerUID, 0xd0f765bb, 0x620c482c, 0x86ccea5b, 0xf8d66833);
+#ifdef DEVELOPMENT
+static DECLARE_UID (AMegalayProcessorUID, 0x36EC68FE, 0x9ACf41E7, 0x851715FB, 0x00000000);
+static DECLARE_UID (AMegalayControllerUID, 0xD0F765BB, 0x620C482C, 0x86CCEA5B, 0x00000000);
+#else
+static DECLARE_UID(AMegalayProcessorUID, 0x36EC68FE, 0x9ACf41E7, 0x851715FB, 0x2D552E37);
+static DECLARE_UID(AMegalayControllerUID, 0xD0F765BB, 0x620C482C, 0x86CCEA5B, 0xF8d66833);
+#endif
 
 }} // namespaces
 

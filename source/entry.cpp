@@ -5,8 +5,6 @@
 
 #include "public.sdk/source/main/pluginfactory_constexpr.h"
 
-#define stringPluginName "Megalay"
-
 //------------------------------------------------------------------------
 //  Module init/exit
 //------------------------------------------------------------------------
